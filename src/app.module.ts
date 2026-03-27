@@ -1,10 +1,25 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { envConfig } from './config/env.config';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { EjerciciosModule } from './modules/ejercicios/ejercicios.module';
+import { QuizModule } from './modules/quiz/quiz.module';
+import { ProgresoModule } from './modules/progreso/progreso.module';
+import { PrismaService } from './database/prisma.service';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [envConfig],
+    }),
+    AuthModule,
+    UsersModule,
+    EjerciciosModule,
+    QuizModule,
+    ProgresoModule,
+  ],
+  providers: [PrismaService],
 })
 export class AppModule {}
