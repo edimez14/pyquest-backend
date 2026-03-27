@@ -7,6 +7,7 @@ import { EjerciciosModule } from './modules/ejercicios/ejercicios.module';
 import { QuizModule } from './modules/quiz/quiz.module';
 import { ProgresoModule } from './modules/progreso/progreso.module';
 import { DatabaseModule } from './database/database.module';
+import { CompilerModule } from './modules/compiler/compiler.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DatabaseModule } from './database/database.module';
     EjerciciosModule,
     QuizModule,
     ProgresoModule,
+    CompilerModule,
   ],
 })
 export class AppModule {}
