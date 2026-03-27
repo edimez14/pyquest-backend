@@ -1,12 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
-  register() {
-    return { message: 'Registro base listo' };
+  register(registerDto: RegisterDto) {
+    return {
+      message: 'Registro base listo',
+      user: {
+        nombre: registerDto.nombre,
+        email: registerDto.email,
+      },
+    };
   }
 
-  login() {
-    return { message: 'Login base listo' };
+  login(loginDto: LoginDto) {
+    return {
+      message: 'Login base listo',
+      user: {
+        email: loginDto.email,
+      },
+    };
   }
 }
