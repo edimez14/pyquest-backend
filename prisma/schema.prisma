@@ -6,3 +6,120 @@ datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
+
+enum DificultadEjercicio {
+    BAJO
+    MEDIO
+    ALTO
+}
+
+model Usuario {
+    idUsuario    Int               @id @default(autoincrement()) @map("id_usuario")
+    nombre       String            @db.VarChar(120)
+    email        String            @unique @db.VarChar(180)
+    passwordHash String            @map("password") @db.VarChar(255)
+    fechaCreado  DateTime          @default(now()) @map("fecha_creado")
+    perfil       Perfil?
+    intentos     Intento[]
+    progreso     ProgresoUsuario[]
+
+    @@map("usuarios")
+}
+
+model Perfil {
+    idPerfil    Int     @id @default(autoincrement()) @map("id_perfil")
+    idUsuario   Int     @unique @map("id_usuario")
+    nivel       Int     @default(1)
+    experiencia Int     @default(0)
+    racha       Int     @default(0)
+    usuario     Usuario @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+
+    @@index([idUsuario])
+    @@map("perfiles")
+}
+
+model Ejercicio {
+    idEjercicio Int                 @id @default(autoincrement()) @map("id_ejercicio")
+    titulo      String              @db.VarChar(180)
+    descripcion String              @db.Text
+    dificultad  DificultadEjercicio
+    categoria   String              @db.VarChar(100)
+    solucion    Solucion?
+    intentos    Intento[]
+    progreso    ProgresoUsuario[]
+
+    @@index([categoria])
+    @@index([dificultad])
+    @@map("ejercicios")
+}
+
+model Solucion {
+    idSolucion       Int       @id @default(autoincrement()) @map("id_solucion")
+    idEjercicio      Int       @unique @map("id_ejercicio")
+    patronValidacion String    @map("patron_validacion") @db.Text
+    ejercicio        Ejercicio @relation(fields: [idEjercicio], references: [idEjercicio], onDelete: Cascade)
+
+    @@index([idEjercicio])
+    @@map("soluciones")
+}
+
+model Intento {
+    idIntento   Int       @id @default(autoincrement()) @map("id_intento")
+    idUsuario   Int       @map("id_usuario")
+    idEjercicio Int       @map("id_ejercicio")
+    respuesta   String    @db.Text
+    esCorrecto  Boolean   @map("es_correcto")
+    fecha       DateTime  @default(now())
+    usuario     Usuario   @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+    ejercicio   Ejercicio @relation(fields: [idEjercicio], references: [idEjercicio], onDelete: Cascade)
+
+    @@index([idUsuario])
+    @@index([idEjercicio])
+    @@index([fecha])
+    @@map("intentos")
+}
+
+model Quiz {
+    idQuiz      Int        @id @default(autoincrement()) @map("id_quiz")
+    titulo      String     @db.VarChar(180)
+    descripcion String     @db.Text
+    preguntas   Pregunta[]
+
+    @@map("quizzes")
+}
+
+model Pregunta {
+    idPregunta Int         @id @default(autoincrement()) @map("id_pregunta")
+    idQuiz     Int         @map("id_quiz")
+    enunciado  String      @db.Text
+    quiz       Quiz        @relation(fields: [idQuiz], references: [idQuiz], onDelete: Cascade)
+    respuestas Respuesta[]
+
+    @@index([idQuiz])
+    @@map("preguntas")
+}
+
+model Respuesta {
+    idRespuesta Int      @id @default(autoincrement()) @map("id_respuesta")
+    idPregunta  Int      @map("id_pregunta")
+    texto       String   @db.Text
+    esCorrecta  Boolean  @default(false) @map("es_correcta")
+    pregunta    Pregunta @relation(fields: [idPregunta], references: [idPregunta], onDelete: Cascade)
+
+    @@index([idPregunta])
+    @@map("respuestas")
+}
+
+model ProgresoUsuario {
+    idProgreso  Int       @id @default(autoincrement()) @map("id_progreso")
+    idUsuario   Int       @map("id_usuario")
+    idEjercicio Int       @map("id_ejercicio")
+    completado  Boolean   @default(false)
+    usuario     Usuario   @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+    ejercicio   Ejercicio @relation(fields: [idEjercicio], references: [idEjercicio], onDelete: Cascade)
+
+    @@unique([idUsuario, idEjercicio])
+    @@index([idUsuario])
+    @@index([idEjercicio])
+    @@map("progreso_usuario")
+}
