@@ -32,4 +32,4 @@ async function bootstrap() {
   const port = Number(process.env.PORT ?? 8008);
   await app.listen(port);
 }
-bootstrap();
+void bootstrap();

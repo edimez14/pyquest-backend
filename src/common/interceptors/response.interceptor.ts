@@ -7,15 +7,16 @@ import {
 import { map, Observable } from 'rxjs';
 
 @Injectable()
-export class ResponseInterceptor<T>
-  implements NestInterceptor<T, { success: boolean; data: T }>
-{
+export class ResponseInterceptor<T> implements NestInterceptor<
+  T,
+  { success: boolean; data: T }
+> {
   intercept(
     _context: ExecutionContext,
-    next: CallHandler,
+    next: CallHandler<T>,
   ): Observable<{ success: boolean; data: T }> {
     return next.handle().pipe(
-      map((data) => ({
+      map((data: T) => ({
         success: true,
         data,
       })),

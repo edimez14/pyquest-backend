@@ -6,7 +6,7 @@ import { UsersModule } from './modules/users/users.module';
 import { EjerciciosModule } from './modules/ejercicios/ejercicios.module';
 import { QuizModule } from './modules/quiz/quiz.module';
 import { ProgresoModule } from './modules/progreso/progreso.module';
-import { PrismaService } from './database/prisma.service';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -15,11 +15,11 @@ import { PrismaService } from './database/prisma.service';
       load: [envConfig],
     }),
     AuthModule,
+    DatabaseModule,
     UsersModule,
     EjerciciosModule,
     QuizModule,
     ProgresoModule,
   ],
-  providers: [PrismaService],
 })
 export class AppModule {}
