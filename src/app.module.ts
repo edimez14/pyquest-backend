@@ -8,6 +8,7 @@ import { QuizModule } from './modules/quiz/quiz.module';
 import { ProgresoModule } from './modules/progreso/progreso.module';
 import { DatabaseModule } from './database/database.module';
 import { CompilerModule } from './modules/compiler/compiler.module';
+import { CoreModule } from './modules/core/core.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CompilerModule } from './modules/compiler/compiler.module';
     QuizModule,
     ProgresoModule,
     CompilerModule,
+    CoreModule,
   ],
 })
 export class AppModule {}
