@@ -19,10 +19,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const responseBody = isHttpException ? exception.getResponse() : null;
     const message =
-      isHttpException && typeof exception.getResponse() === 'object'
-        ? exception.getResponse()
-        : 'Error interno del servidor';
+      typeof responseBody === 'string'
+        ? responseBody
+        : responseBody && typeof responseBody === 'object'
+          ? responseBody
+          : 'Error interno del servidor';
 
     response.status(status).json({
       success: false,
