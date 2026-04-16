@@ -13,6 +13,7 @@ import { CreateEjercicioDto } from './dto/create-ejercicio.dto';
 import { UpdateEjercicioDto } from './dto/update-ejercicio.dto';
 import { FindEjercicioParamsDto } from './dto/find-ejercicio-params.dto';
 import { FindEjerciciosQueryDto } from './dto/find-ejercicios-query.dto';
+import { ValidarEjercicioDto } from './dto/validar-ejercicio.dto';
 
 @Controller('ejercicios')
 export class EjerciciosController {
@@ -31,6 +32,14 @@ export class EjerciciosController {
   @Post()
   create(@Body() dto: CreateEjercicioDto) {
     return this.ejerciciosService.create(dto);
+  }
+
+  @Post(':idEjercicio/validar')
+  validar(
+    @Param() params: FindEjercicioParamsDto,
+    @Body() dto: ValidarEjercicioDto,
+  ) {
+    return this.ejerciciosService.validarRespuesta(params.idEjercicio, dto);
   }
 
   @Patch(':idEjercicio')
