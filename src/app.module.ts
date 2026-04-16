@@ -9,6 +9,7 @@ import { ProgresoModule } from './modules/progreso/progreso.module';
 import { DatabaseModule } from './database/database.module';
 import { CompilerModule } from './modules/compiler/compiler.module';
 import { CoreModule } from './modules/core/core.module';
+import { ApiModule } from './modules/api/api.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CoreModule } from './modules/core/core.module';
     ProgresoModule,
     CompilerModule,
     CoreModule,
+    ApiModule,
   ],
 })
 export class AppModule {}
