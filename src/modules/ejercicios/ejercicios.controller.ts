@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { EjerciciosService } from './ejercicios.service';
 import { CreateEjercicioDto } from './dto/create-ejercicio.dto';
@@ -14,8 +15,10 @@ import { UpdateEjercicioDto } from './dto/update-ejercicio.dto';
 import { FindEjercicioParamsDto } from './dto/find-ejercicio-params.dto';
 import { FindEjerciciosQueryDto } from './dto/find-ejercicios-query.dto';
 import { ValidarEjercicioDto } from './dto/validar-ejercicio.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('ejercicios')
+@UseGuards(JwtAuthGuard)
 export class EjerciciosController {
   constructor(private readonly ejerciciosService: EjerciciosService) { }
 
