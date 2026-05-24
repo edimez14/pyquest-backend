@@ -39,11 +39,15 @@ RUN npm ci --omit=dev && npm cache clean --force
 # Copy compiled app from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy Prisma schema (needed by release_command: prisma migrate deploy)
+# Copy Prisma schema (needed for prisma migrate deploy in startup.sh)
 COPY --from=builder /app/prisma ./prisma
 
 # Regenerate Prisma client for the production environment
 RUN npx prisma generate
+
+# Copy startup script
+COPY startup.sh ./
+RUN chmod +x startup.sh
 
 # Expose port (Fly.io passes PORT via environment, defaults to 8080)
 EXPOSE 8080
@@ -52,5 +56,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:'+(process.env.PORT||8080)+'/api/core/health',r=>{process.exit(r.statusCode===200?0:1)})"
 
-# Start the server (release_command runs prisma migrate deploy before this)
-ENTRYPOINT ["node", "dist/main"]
+# Entrypoint: wait for DB, run migrations, then start the server
+ENTRYPOINT ["./startup.sh"]
