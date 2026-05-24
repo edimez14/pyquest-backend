@@ -10,6 +10,7 @@ import { DatabaseModule } from './database/database.module';
 import { CompilerModule } from './modules/compiler/compiler.module';
 import { CoreModule } from './modules/core/core.module';
 import { ApiModule } from './modules/api/api.module';
+import { RachasModule } from './modules/rachas/rachas.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ApiModule } from './modules/api/api.module';
     CompilerModule,
     CoreModule,
     ApiModule,
+    RachasModule,
   ],
 })
 export class AppModule {}

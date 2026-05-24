@@ -4,10 +4,14 @@ import { CreateEjercicioDto } from './dto/create-ejercicio.dto';
 import { UpdateEjercicioDto } from './dto/update-ejercicio.dto';
 import { FindEjerciciosQueryDto } from './dto/find-ejercicios-query.dto';
 import { ValidarEjercicioDto } from './dto/validar-ejercicio.dto';
+import { RachasService } from '../rachas/rachas.service';
 
 @Injectable()
 export class EjerciciosService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly rachasService: RachasService,
+  ) { }
 
   async findAll(query: FindEjerciciosQueryDto) {
     const where = {
@@ -102,6 +106,9 @@ export class EjerciciosService {
         esCorrecto: true,
       },
     });
+
+    // Actualizar rachas del usuario segun el resultado
+    await this.rachasService.actualizarRachas(dto.idUsuario, esCorrecto);
 
     return {
       ejercicioId: idEjercicio,

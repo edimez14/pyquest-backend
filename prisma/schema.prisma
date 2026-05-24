@@ -27,12 +27,20 @@ model Usuario {
 }
 
 model Perfil {
-    idPerfil    Int     @id @default(autoincrement()) @map("id_perfil")
-    idUsuario   Int     @unique @map("id_usuario")
-    nivel       Int     @default(1)
-    experiencia Int     @default(0)
-    racha       Int     @default(0)
-    usuario     Usuario @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+    idPerfil                Int       @id @default(autoincrement()) @map("id_perfil")
+    idUsuario               Int       @unique @map("id_usuario")
+    nivel                   Int       @default(1)
+    experiencia             Int       @default(0)
+    racha                   Int       @default(0)
+    rachaDiaria             Int       @default(0) @map("racha_diaria")
+    rachaDiariaMax          Int       @default(0) @map("racha_diaria_max")
+    rachaConsecutiva        Int       @default(0) @map("racha_consecutiva")
+    rachaConsecutivaMax     Int       @default(0) @map("racha_consecutiva_max")
+    fechaUltimoEjercicio    DateTime? @map("fecha_ultimo_ejercicio")
+    inicioRachaDiaria       DateTime? @map("inicio_racha_diaria")
+    inicioRachaConsecutiva  DateTime? @map("inicio_racha_consecutiva")
+    ultimaActualizacionRachas DateTime? @map("ultima_actualizacion_rachas")
+    usuario                 Usuario   @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
 
     @@index([idUsuario])
     @@map("perfiles")
