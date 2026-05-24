@@ -14,14 +14,15 @@ enum DificultadEjercicio {
 }
 
 model Usuario {
-    idUsuario    Int               @id @default(autoincrement()) @map("id_usuario")
-    nombre       String            @db.VarChar(120)
-    email        String            @unique @db.VarChar(180)
-    passwordHash String            @map("password") @db.VarChar(255)
-    fechaCreado  DateTime          @default(now()) @map("fecha_creado")
-    perfil       Perfil?
-    intentos     Intento[]
-    progreso     ProgresoUsuario[]
+    idUsuario            Int                  @id @default(autoincrement()) @map("id_usuario")
+    nombre               String               @db.VarChar(120)
+    email                String               @unique @db.VarChar(180)
+    passwordHash         String               @map("password") @db.VarChar(255)
+    fechaCreado          DateTime             @default(now()) @map("fecha_creado")
+    perfil               Perfil?
+    intentos             Intento[]
+    progreso             ProgresoUsuario[]
+    transaccionesPuntos  TransaccionPuntos[]
 
     @@map("usuarios")
 }
@@ -30,7 +31,7 @@ model Perfil {
     idPerfil                Int       @id @default(autoincrement()) @map("id_perfil")
     idUsuario               Int       @unique @map("id_usuario")
     nivel                   Int       @default(1)
-    experiencia             Int       @default(0)
+    puntos                  Int       @default(0)
     racha                   Int       @default(0)
     rachaDiaria             Int       @default(0) @map("racha_diaria")
     rachaDiariaMax          Int       @default(0) @map("racha_diaria_max")
@@ -116,6 +117,22 @@ model Respuesta {
 
     @@index([idPregunta])
     @@map("respuestas")
+}
+
+model TransaccionPuntos {
+    idTransaccion Int      @id @default(autoincrement()) @map("id_transaccion")
+    idUsuario     Int      @map("id_usuario")
+    cantidad      Int      // positivo = ganancia, negativo = gasto
+    tipo          String   @db.VarChar(50) // 'ejercicio_completado', 'tienda_canje', 'ajuste_manual'
+    descripcion   String?  @db.VarChar(255)
+    idEjercicio   Int?     @map("id_ejercicio")
+    fecha         DateTime @default(now())
+    usuario       Usuario  @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+
+    @@index([idUsuario])
+    @@index([tipo])
+    @@index([fecha])
+    @@map("transacciones_puntos")
 }
 
 model ProgresoUsuario {

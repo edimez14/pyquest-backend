@@ -26,7 +26,7 @@ export class UsersService {
       perfil: user.perfil
         ? {
             nivel: user.perfil.nivel,
-            experiencia: user.perfil.experiencia,
+            puntos: user.perfil.puntos,
             racha: user.perfil.racha,
           }
         : null,

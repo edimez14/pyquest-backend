@@ -10,7 +10,7 @@ describe('RachasService', () => {
     idPerfil: 1,
     idUsuario: 1,
     nivel: 1,
-    experiencia: 0,
+    puntos: 0,
     racha: 0,
     rachaDiaria: 0,
     rachaDiariaMax: 0,

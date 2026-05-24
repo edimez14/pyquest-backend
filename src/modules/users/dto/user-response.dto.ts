@@ -5,7 +5,7 @@ export interface UserResponseDto {
   fechaCreado: Date;
   perfil: {
     nivel: number;
-    experiencia: number;
+    puntos: number;
     racha: number;
   } | null;
 }

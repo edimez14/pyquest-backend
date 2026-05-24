@@ -5,12 +5,14 @@ import { UpdateEjercicioDto } from './dto/update-ejercicio.dto';
 import { FindEjerciciosQueryDto } from './dto/find-ejercicios-query.dto';
 import { ValidarEjercicioDto } from './dto/validar-ejercicio.dto';
 import { RachasService } from '../rachas/rachas.service';
+import { PuntosService } from '../puntos/puntos.service';
 
 @Injectable()
 export class EjerciciosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly rachasService: RachasService,
+    private readonly puntosService: PuntosService,
   ) { }
 
   async findAll(query: FindEjerciciosQueryDto) {
@@ -110,12 +112,24 @@ export class EjerciciosService {
     // Actualizar rachas del usuario segun el resultado
     await this.rachasService.actualizarRachas(dto.idUsuario, esCorrecto);
 
+    // Otorgar puntos si la respuesta fue correcta
+    let puntosOtorgados = 0;
+    if (esCorrecto) {
+      const resultado = await this.puntosService.otorgarPuntos(
+        dto.idUsuario,
+        ejercicio.dificultad,
+        idEjercicio,
+      );
+      puntosOtorgados = resultado.puntosOtorgados;
+    }
+
     return {
       ejercicioId: idEjercicio,
       usuarioId: dto.idUsuario,
       esCorrecto,
+      puntosOtorgados,
       feedback: esCorrecto
-        ? 'Respuesta correcta. Buen trabajo.'
+        ? `Respuesta correcta. +${puntosOtorgados} puntos. Buen trabajo.`
         : 'Respuesta incorrecta. Revisa la lógica e intenta de nuevo.',
       intento,
     };

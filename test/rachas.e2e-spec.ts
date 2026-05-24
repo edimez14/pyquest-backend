@@ -46,7 +46,7 @@ describe('Rachas Integration (e2e)', () => {
         perfil: {
           create: {
             nivel: 1,
-            experiencia: 0,
+            puntos: 0,
             racha: 0,
           },
         },

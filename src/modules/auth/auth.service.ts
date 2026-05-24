@@ -38,7 +38,7 @@ export class AuthService {
         perfil: {
           create: {
             nivel: 1,
-            experiencia: 0,
+            puntos: 0,
             racha: 0,
           },
         },
@@ -100,7 +100,7 @@ export class AuthService {
         perfil: user.perfil
           ? {
               nivel: user.perfil.nivel,
-              experiencia: user.perfil.experiencia,
+              puntos: user.perfil.puntos,
               racha: user.perfil.racha,
             }
           : null,
