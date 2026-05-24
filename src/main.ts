@@ -29,7 +29,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  const port = Number(process.env.PORT ?? 8008);
+  const port = Number(process.env.PORT ?? 8218);
   await app.listen(port);
 }
 void bootstrap();
