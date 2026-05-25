@@ -71,6 +71,8 @@ model Solucion {
     idSolucion       Int       @id @default(autoincrement()) @map("id_solucion")
     idEjercicio      Int       @unique @map("id_ejercicio")
     patronValidacion String    @map("patron_validacion") @db.Text
+    outputEsperado   String?   @map("output_esperado") @db.Text
+    stdin            String?   @db.Text
     ejercicio        Ejercicio @relation(fields: [idEjercicio], references: [idEjercicio], onDelete: Cascade)
 
     @@index([idEjercicio])

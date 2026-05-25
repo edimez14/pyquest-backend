@@ -4,6 +4,7 @@ import {
     ArrayMinSize,
     IsEnum,
     IsNotEmpty,
+    IsOptional,
     IsString,
     MaxLength,
     MinLength,
@@ -47,6 +48,21 @@ export class CreateEjercicioDto {
     @MinLength(2)
     @MaxLength(100)
     categoria!: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(20000)
+    patronValidacion?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(20000)
+    outputEsperado?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(5000)
+    stdin?: string;
 
     // Exactamente 3 pistas requeridas al crear un ejercicio
     @ValidateNested({ each: true })

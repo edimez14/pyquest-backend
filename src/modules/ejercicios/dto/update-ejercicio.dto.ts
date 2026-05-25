@@ -49,6 +49,21 @@ export class UpdateEjercicioDto {
     @MaxLength(100)
     categoria?: string;
 
+    @IsOptional()
+    @IsString()
+    @MaxLength(20000)
+    patronValidacion?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(20000)
+    outputEsperado?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(5000)
+    stdin?: string;
+
     // Opcional en update, pero si se proporcionan, deben ser exactamente 3
     @IsOptional()
     @ValidateNested({ each: true })

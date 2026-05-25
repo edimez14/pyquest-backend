@@ -8,6 +8,8 @@ interface EjercicioSeed {
     dificultad: DificultadEjercicio;
     categoria: string;
     patronValidacion: string;
+    outputEsperado?: string | null;
+    stdin?: string | null;
     pistas: string[];
 }
 
@@ -1920,6 +1922,8 @@ async function main() {
             data: {
                 idEjercicio: ejercicio.idEjercicio,
                 patronValidacion: ej.patronValidacion,
+                outputEsperado: ej.outputEsperado ?? null,
+                stdin: ej.stdin ?? null,
             },
         });
         solucionesCreadas++;

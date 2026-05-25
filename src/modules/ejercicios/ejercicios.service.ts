@@ -7,6 +7,7 @@ import { ValidarEjercicioDto } from './dto/validar-ejercicio.dto';
 import { RachasService } from '../rachas/rachas.service';
 import { PuntosService } from '../puntos/puntos.service';
 import { PistasService } from './pistas.service';
+import { CompilerService } from '../compiler/compiler.service';
 
 @Injectable()
 export class EjerciciosService {
@@ -15,6 +16,7 @@ export class EjerciciosService {
     private readonly rachasService: RachasService,
     private readonly puntosService: PuntosService,
     private readonly pistasService: PistasService,
+    private readonly compilerService: CompilerService,
   ) { }
 
   async findAll(query: FindEjerciciosQueryDto) {
@@ -43,11 +45,23 @@ export class EjerciciosService {
   }
 
   async create(dto: CreateEjercicioDto) {
-    const { pistas, ...ejercicioData } = dto;
+    const { pistas, patronValidacion, outputEsperado, stdin, ...ejercicioData } = dto;
 
     const ejercicio = await this.prisma.ejercicio.create({
       data: ejercicioData,
     });
+
+    // Crear la solución asociada (output o regex)
+    if (patronValidacion || outputEsperado) {
+      await this.prisma.solucion.create({
+        data: {
+          idEjercicio: ejercicio.idEjercicio,
+          patronValidacion: patronValidacion ?? '',
+          outputEsperado: outputEsperado ?? null,
+          stdin: stdin ?? null,
+        },
+      });
+    }
 
     // Crear las 3 pistas asociadas al ejercicio
     await this.pistasService.createPistas(ejercicio.idEjercicio, pistas);
@@ -58,12 +72,30 @@ export class EjerciciosService {
   async update(idEjercicio: number, dto: UpdateEjercicioDto) {
     await this.findOne(idEjercicio);
 
-    const { pistas, ...ejercicioData } = dto;
+    const { pistas, patronValidacion, outputEsperado, stdin, ...ejercicioData } = dto;
 
     const ejercicio = await this.prisma.ejercicio.update({
       where: { idEjercicio },
       data: ejercicioData,
     });
+
+    // Actualizar o crear la solución si se enviaron campos de validación
+    if (patronValidacion !== undefined || outputEsperado !== undefined || stdin !== undefined) {
+      await this.prisma.solucion.upsert({
+        where: { idEjercicio },
+        create: {
+          idEjercicio,
+          patronValidacion: patronValidacion ?? '',
+          outputEsperado: outputEsperado ?? null,
+          stdin: stdin ?? null,
+        },
+        update: {
+          ...(patronValidacion !== undefined && { patronValidacion }),
+          ...(outputEsperado !== undefined && { outputEsperado }),
+          ...(stdin !== undefined && { stdin }),
+        },
+      });
+    }
 
     // Si se enviaron pistas, reemplazarlas
     if (pistas) {
@@ -97,7 +129,11 @@ export class EjerciciosService {
       where: { idEjercicio },
       include: {
         solucion: {
-          select: { patronValidacion: true },
+          select: {
+            patronValidacion: true,
+            outputEsperado: true,
+            stdin: true,
+          },
         },
       },
     });
@@ -106,12 +142,41 @@ export class EjerciciosService {
       throw new NotFoundException('Ejercicio no encontrado');
     }
 
-    if (!ejercicio.solucion?.patronValidacion) {
-      throw new BadRequestException('El ejercicio no tiene patrón de validación configurado');
+    if (!ejercicio.solucion?.outputEsperado && !ejercicio.solucion?.patronValidacion) {
+      throw new BadRequestException('El ejercicio no tiene validación configurada');
     }
 
-    const patron = ejercicio.solucion.patronValidacion;
-    const esCorrecto = this.evaluarRespuesta(dto.respuesta, patron);
+    // Determinar si usar validación por output o por regex (fallback)
+    const usarOutput = !!ejercicio.solucion?.outputEsperado;
+
+    let esCorrecto: boolean;
+    let stdoutUsuario = '';
+    let stderrUsuario = '';
+
+    if (usarOutput) {
+      // ── Validación por comportamiento (output esperado) ──
+      const resultado = await this.compilerService.executePython({
+        code: dto.respuesta,
+        stdin: ejercicio.solucion.stdin ?? '',
+      });
+
+      stdoutUsuario = resultado.stdout ?? '';
+      stderrUsuario = resultado.stderr ?? '';
+
+      if (!resultado.passed) {
+        // Código no compila o tiene error de ejecución
+        esCorrecto = false;
+      } else {
+        // Comparar output del usuario con el esperado (trim para tolerar espacios)
+        const outputLimpio = stdoutUsuario.trim();
+        const esperadoLimpio = ejercicio.solucion.outputEsperado!.trim();
+        esCorrecto = outputLimpio === esperadoLimpio;
+      }
+    } else {
+      // ── Fallback: validación por regex (legado) ──
+      const patron = ejercicio.solucion.patronValidacion;
+      esCorrecto = this.evaluarRespuestaRegex(dto.respuesta, patron);
+    }
 
     const intento = await this.prisma.intento.create({
       data: {
@@ -174,8 +239,12 @@ export class EjerciciosService {
       });
     }
 
-    // Mensaje de feedback segun el caso
+    // Construir feedback detallado
     let feedback: string;
+    let errorCompilacion: string | null = null;
+    let outputObtenido: string | null = null;
+    let outputEsperado: string | null = null;
+
     if (esCorrecto) {
       if (yaCompletado) {
         feedback = 'Respuesta correcta. Ya habías completado este ejercicio, no se otorgan puntos adicionales.';
@@ -183,7 +252,16 @@ export class EjerciciosService {
         feedback = `Respuesta correcta. +${puntosOtorgados} puntos. Buen trabajo.`;
       }
     } else {
-      feedback = 'Respuesta incorrecta. Revisa la lógica e intenta de nuevo.';
+      if (usarOutput && stderrUsuario) {
+        feedback = 'Tu código tiene errores. Revisá el mensaje de error.';
+        errorCompilacion = stderrUsuario;
+      } else if (usarOutput) {
+        feedback = 'Tu código ejecuta pero no produce el resultado esperado.';
+        outputObtenido = stdoutUsuario;
+        outputEsperado = ejercicio.solucion.outputEsperado;
+      } else {
+        feedback = 'Respuesta incorrecta. Revisá la lógica e intenta de nuevo.';
+      }
     }
 
     return {
@@ -192,11 +270,18 @@ export class EjerciciosService {
       esCorrecto,
       puntosOtorgados,
       feedback,
+      errorCompilacion,
+      outputObtenido,
+      outputEsperado,
       intento,
     };
   }
 
-  private evaluarRespuesta(respuesta: string, patronValidacion: string): boolean {
+  /**
+   * Fallback legacy: evalúa la respuesta contra un patrón regex.
+   * Se mantiene para ejercicios que no tienen outputEsperado definido.
+   */
+  private evaluarRespuestaRegex(respuesta: string, patronValidacion: string): boolean {
     const respuestaNormalizada = this.normalizarTexto(respuesta);
     const patronNormalizado = patronValidacion.trim();
 
