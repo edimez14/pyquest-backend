@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-export NODE_ENV=production
-
 echo "========================================"
 echo "  PyQuest Backend — Render Deploy"
 echo "  Node: $(node -v)"
@@ -14,4 +12,5 @@ echo "[1/2] Running Prisma migrations..."
 npx prisma migrate deploy || echo "⚠️  Migrations skipped (DB may not be ready)"
 
 echo "[2/2] Starting server on port ${PORT:-10000}..."
-exec node dist/main
+exec node dist/src/main
+
