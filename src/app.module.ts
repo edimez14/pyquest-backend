@@ -12,6 +12,7 @@ import { CoreModule } from './modules/core/core.module';
 import { ApiModule } from './modules/api/api.module';
 import { RachasModule } from './modules/rachas/rachas.module';
 import { PuntosModule } from './modules/puntos/puntos.module';
+import { IconosModule } from './modules/iconos/iconos.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PuntosModule } from './modules/puntos/puntos.module';
     ApiModule,
     RachasModule,
     PuntosModule,
+    IconosModule,
   ],
 })
 export class AppModule {}

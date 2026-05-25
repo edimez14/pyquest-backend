@@ -23,6 +23,7 @@ model Usuario {
     intentos             Intento[]
     progreso             ProgresoUsuario[]
     transaccionesPuntos  TransaccionPuntos[]
+    iconosDesbloqueados  UsuarioIcono[]
 
     @@map("usuarios")
 }
@@ -41,9 +42,12 @@ model Perfil {
     inicioRachaDiaria       DateTime? @map("inicio_racha_diaria")
     inicioRachaConsecutiva  DateTime? @map("inicio_racha_consecutiva")
     ultimaActualizacionRachas DateTime? @map("ultima_actualizacion_rachas")
+    idIconoActivo           Int?      @map("id_icono_activo")
+    iconoActivo             Icono?    @relation(fields: [idIconoActivo], references: [idIcono])
     usuario                 Usuario   @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
 
     @@index([idUsuario])
+    @@index([idIconoActivo])
     @@map("perfiles")
 }
 
@@ -146,6 +150,31 @@ model TransaccionPuntos {
     @@index([tipo])
     @@index([fecha])
     @@map("transacciones_puntos")
+}
+
+model Icono {
+    idIcono     Int            @id @default(autoincrement()) @map("id_icono")
+    nombre      String         @db.VarChar(100)
+    ruta        String         @db.VarChar(255)
+    descripcion String?        @db.VarChar(255)
+    costo       Int            @default(0)
+    usuarios    UsuarioIcono[]
+    perfiles    Perfil[]
+
+    @@map("iconos")
+}
+
+model UsuarioIcono {
+    idUsuario       Int      @map("id_usuario")
+    idIcono         Int      @map("id_icono")
+    fechaDesbloqueo DateTime @default(now()) @map("fecha_desbloqueo")
+    usuario         Usuario  @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+    icono           Icono    @relation(fields: [idIcono], references: [idIcono], onDelete: Cascade)
+
+    @@unique([idUsuario, idIcono])
+    @@index([idUsuario])
+    @@index([idIcono])
+    @@map("usuarios_iconos")
 }
 
 model ProgresoUsuario {

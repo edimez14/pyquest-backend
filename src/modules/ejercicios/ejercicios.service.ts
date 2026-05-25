@@ -130,9 +130,22 @@ export class EjerciciosService {
     // Actualizar rachas del usuario segun el resultado
     await this.rachasService.actualizarRachas(dto.idUsuario, esCorrecto);
 
-    // Otorgar puntos si la respuesta fue correcta
+    // Verificar si el usuario ya habia completado este ejercicio antes
+    const progresoExistente = await this.prisma.progresoUsuario.findUnique({
+      where: {
+        idUsuario_idEjercicio: {
+          idUsuario: dto.idUsuario,
+          idEjercicio,
+        },
+      },
+      select: { completado: true },
+    });
+
+    const yaCompletado = progresoExistente?.completado ?? false;
+
+    // Otorgar puntos solo si es primera vez que acierta
     let puntosOtorgados = 0;
-    if (esCorrecto) {
+    if (esCorrecto && !yaCompletado) {
       const resultado = await this.puntosService.otorgarPuntos(
         dto.idUsuario,
         ejercicio.dificultad,
@@ -141,14 +154,44 @@ export class EjerciciosService {
       puntosOtorgados = resultado.puntosOtorgados;
     }
 
+    // Marcar ejercicio como completado (primera vez o re-solucion)
+    if (esCorrecto) {
+      await this.prisma.progresoUsuario.upsert({
+        where: {
+          idUsuario_idEjercicio: {
+            idUsuario: dto.idUsuario,
+            idEjercicio,
+          },
+        },
+        create: {
+          idUsuario: dto.idUsuario,
+          idEjercicio,
+          completado: true,
+        },
+        update: {
+          completado: true,
+        },
+      });
+    }
+
+    // Mensaje de feedback segun el caso
+    let feedback: string;
+    if (esCorrecto) {
+      if (yaCompletado) {
+        feedback = 'Respuesta correcta. Ya habías completado este ejercicio, no se otorgan puntos adicionales.';
+      } else {
+        feedback = `Respuesta correcta. +${puntosOtorgados} puntos. Buen trabajo.`;
+      }
+    } else {
+      feedback = 'Respuesta incorrecta. Revisa la lógica e intenta de nuevo.';
+    }
+
     return {
       ejercicioId: idEjercicio,
       usuarioId: dto.idUsuario,
       esCorrecto,
       puntosOtorgados,
-      feedback: esCorrecto
-        ? `Respuesta correcta. +${puntosOtorgados} puntos. Buen trabajo.`
-        : 'Respuesta incorrecta. Revisa la lógica e intenta de nuevo.',
+      feedback,
       intento,
     };
   }
