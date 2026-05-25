@@ -6,6 +6,7 @@ import { FindEjerciciosQueryDto } from './dto/find-ejercicios-query.dto';
 import { ValidarEjercicioDto } from './dto/validar-ejercicio.dto';
 import { RachasService } from '../rachas/rachas.service';
 import { PuntosService } from '../puntos/puntos.service';
+import { PistasService } from './pistas.service';
 
 @Injectable()
 export class EjerciciosService {
@@ -13,6 +14,7 @@ export class EjerciciosService {
     private readonly prisma: PrismaService,
     private readonly rachasService: RachasService,
     private readonly puntosService: PuntosService,
+    private readonly pistasService: PistasService,
   ) { }
 
   async findAll(query: FindEjerciciosQueryDto) {
@@ -40,19 +42,35 @@ export class EjerciciosService {
     return ejercicio;
   }
 
-  create(dto: CreateEjercicioDto) {
-    return this.prisma.ejercicio.create({
-      data: dto,
+  async create(dto: CreateEjercicioDto) {
+    const { pistas, ...ejercicioData } = dto;
+
+    const ejercicio = await this.prisma.ejercicio.create({
+      data: ejercicioData,
     });
+
+    // Crear las 3 pistas asociadas al ejercicio
+    await this.pistasService.createPistas(ejercicio.idEjercicio, pistas);
+
+    return { ...ejercicio, pistas };
   }
 
   async update(idEjercicio: number, dto: UpdateEjercicioDto) {
     await this.findOne(idEjercicio);
 
-    return this.prisma.ejercicio.update({
+    const { pistas, ...ejercicioData } = dto;
+
+    const ejercicio = await this.prisma.ejercicio.update({
       where: { idEjercicio },
-      data: dto,
+      data: ejercicioData,
     });
+
+    // Si se enviaron pistas, reemplazarlas
+    if (pistas) {
+      await this.pistasService.replacePistas(idEjercicio, pistas);
+    }
+
+    return { ...ejercicio, ...(pistas && { pistas }) };
   }
 
   async remove(idEjercicio: number) {

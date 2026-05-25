@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { EjerciciosService } from './ejercicios.service';
+import { PistasService } from './pistas.service';
 import { CreateEjercicioDto } from './dto/create-ejercicio.dto';
 import { UpdateEjercicioDto } from './dto/update-ejercicio.dto';
 import { FindEjercicioParamsDto } from './dto/find-ejercicio-params.dto';
@@ -20,7 +21,10 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @Controller('ejercicios')
 @UseGuards(JwtAuthGuard)
 export class EjerciciosController {
-  constructor(private readonly ejerciciosService: EjerciciosService) { }
+  constructor(
+    private readonly ejerciciosService: EjerciciosService,
+    private readonly pistasService: PistasService,
+  ) { }
 
   @Get()
   findAll(@Query() query: FindEjerciciosQueryDto) {
@@ -30,6 +34,11 @@ export class EjerciciosController {
   @Get(':idEjercicio')
   findOne(@Param() params: FindEjercicioParamsDto) {
     return this.ejerciciosService.findOne(params.idEjercicio);
+  }
+
+  @Get(':idEjercicio/pistas')
+  getPistas(@Param() params: FindEjercicioParamsDto) {
+    return this.pistasService.getPistas(params.idEjercicio);
   }
 
   @Post()

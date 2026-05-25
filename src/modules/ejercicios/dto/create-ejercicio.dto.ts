@@ -1,12 +1,16 @@
-import { Transform } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
+    ArrayMaxSize,
+    ArrayMinSize,
     IsEnum,
     IsNotEmpty,
     IsString,
     MaxLength,
     MinLength,
+    ValidateNested,
 } from 'class-validator';
 import { DificultadEjercicio } from '@prisma/client';
+import { PistaItemDto } from './pista.dto';
 
 export class CreateEjercicioDto {
     @Transform(({ value }: { value: unknown }) =>
@@ -43,4 +47,11 @@ export class CreateEjercicioDto {
     @MinLength(2)
     @MaxLength(100)
     categoria!: string;
+
+    // Exactamente 3 pistas requeridas al crear un ejercicio
+    @ValidateNested({ each: true })
+    @Type(() => PistaItemDto)
+    @ArrayMinSize(3, { message: 'Debe proporcionar exactamente 3 pistas' })
+    @ArrayMaxSize(3, { message: 'Debe proporcionar exactamente 3 pistas' })
+    pistas!: PistaItemDto[];
 }

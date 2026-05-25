@@ -1,12 +1,16 @@
-import { Transform } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
+    ArrayMaxSize,
+    ArrayMinSize,
     IsEnum,
     IsOptional,
     IsString,
     MaxLength,
     MinLength,
+    ValidateNested,
 } from 'class-validator';
 import { DificultadEjercicio } from '@prisma/client';
+import { PistaItemDto } from './pista.dto';
 
 export class UpdateEjercicioDto {
     @IsOptional()
@@ -44,4 +48,12 @@ export class UpdateEjercicioDto {
     @MinLength(2)
     @MaxLength(100)
     categoria?: string;
+
+    // Opcional en update, pero si se proporcionan, deben ser exactamente 3
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => PistaItemDto)
+    @ArrayMinSize(3, { message: 'Debe proporcionar exactamente 3 pistas' })
+    @ArrayMaxSize(3, { message: 'Debe proporcionar exactamente 3 pistas' })
+    pistas?: PistaItemDto[];
 }

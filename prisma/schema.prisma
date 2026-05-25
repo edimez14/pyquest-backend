@@ -56,6 +56,7 @@ model Ejercicio {
     solucion    Solucion?
     intentos    Intento[]
     progreso    ProgresoUsuario[]
+    pistas      Pista[]
 
     @@index([categoria])
     @@index([dificultad])
@@ -70,6 +71,18 @@ model Solucion {
 
     @@index([idEjercicio])
     @@map("soluciones")
+}
+
+model Pista {
+    idPista     Int       @id @default(autoincrement()) @map("id_pista")
+    idEjercicio Int       @map("id_ejercicio")
+    orden       Int       // 1, 2 o 3
+    texto       String    @db.Text
+    ejercicio   Ejercicio @relation(fields: [idEjercicio], references: [idEjercicio], onDelete: Cascade)
+
+    @@unique([idEjercicio, orden])
+    @@index([idEjercicio])
+    @@map("pistas")
 }
 
 model Intento {
