@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+export NODE_ENV=production
+
 echo "========================================"
 echo "  PyQuest Backend — Render Deploy"
 echo "  Node: $(node -v)"
